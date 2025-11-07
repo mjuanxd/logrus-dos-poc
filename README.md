@@ -25,7 +25,6 @@ This directory contains proof-of-concept code and test scripts for the Denial of
 - **test_versions.ps1** - PowerShell script to test multiple versions
 - **test_versions.sh** - Bash script to test multiple versions
 - **test_single_version.ps1** - Quick test for a single version
-- **CVE_SUBMISSION_PACKAGE.md** - Complete CVE submission documentation
 
 ## Quick Start
 
@@ -85,11 +84,5 @@ The vulnerability occurs when `logrus.Writer()` receives a single line larger th
 - Snyk Advisory: https://security.snyk.io/vuln/SNYK-GOLANG-GITHUBCOMSIRUPSENLOGRUS-5564391
 - **CVE**: Pending assignment
 
-## CVE Submission
 
-See `CVE_SUBMISSION_PACKAGE.md` for complete submission instructions and evidence.
-
-## Repository Setup
-
-See `GITHUB_REPO_SETUP.md` for step-by-step instructions to create a GitHub repository for CVE submission.
 
