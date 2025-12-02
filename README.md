@@ -1,29 +1,51 @@
-# logrus DoS Vulnerability - Proof of Concept
+# CVE-2025-65637: Logrus Denial of Service Vulnerability
 
-This directory contains proof-of-concept code and test scripts for the Denial of Service (DoS) vulnerability in `github.com/sirupsen/logrus`.
+This directory contains proof-of-concept code and test scripts for the Denial of Service (DoS) vulnerability in `github.com/sirupsen/logrus`, assigned as **CVE-2025-65637**.
 
 ## Vulnerability Summary
 
-**CVE**: Pending assignment  
+**CVE ID**: CVE-2025-65637  
+
 **CWE**: CWE-400 (Uncontrolled Resource Consumption)  
-**CVSS**: 7.5 (High)
+
+**CVSS**: 7.5 (High)  
+
+**Discoverers**: Christopher Straight, Juan Pablo Mandelbaum
+
+## Description
+
+A denial-of-service vulnerability exists in `github.com/sirupsen/logrus` when using `Entry.Writer()` to log a single-line payload larger than 64KB without newline characters. 
+
+Due to limitations in the internal `bufio.Scanner`, the read fails with "token too long" and the writer pipe is closed, leaving `Writer()` unusable and causing application unavailability (DoS). 
+
+This affects versions `< 1.8.3`, `1.9.0`, and `1.9.2`. The issue is fixed in `1.8.3`, `1.9.1`, and `1.9.3+`, where the input is chunked and the writer continues to function even if an error is logged.
 
 **Affected Versions**:
+
 - `< v1.8.3` (including v1.8.1, v1.8.2)
+
 - `v1.9.0`
+
 - `v1.9.2`
 
 **Fixed Versions**:
+
 - `v1.8.3`
+
 - `v1.9.1`
+
 - `v1.9.3+`
 
 ## Files
 
 - **poc_logrus_dos_improved.go** - Standalone PoC demonstrating the vulnerability
+
 - **poc_logrus_dos.go** - Simpler PoC version
+
 - **test_versions.ps1** - PowerShell script to test multiple versions
+
 - **test_versions.sh** - Bash script to test multiple versions
+
 - **test_single_version.ps1** - Quick test for a single version
 
 ## Quick Start
@@ -60,29 +82,27 @@ go run poc_logrus_dos_improved.go
 
 Comprehensive testing confirms:
 
-| Version | Status     |
-|---------|------------|
-| v1.8.1  | VULNERABLE |
-| v1.8.2  | VULNERABLE |
-| v1.8.3  | FIXED      |
-| v1.9.0  | VULNERABLE |
-| v1.9.1  | FIXED      |
-| v1.9.2  | VULNERABLE |
-| v1.9.3  | FIXED      |
+| Version | Status      | Has Error | Writer Broken |
+|---------|-------------|-----------|---------------|
+| v1.8.1  | VULNERABLE  | True      | True          |
+| v1.8.2  | VULNERABLE  | True      | True          |
+| v1.8.3  | FIXED       | True      | False         |
+| v1.9.0  | VULNERABLE  | True      | True          |
+| v1.9.1  | FIXED       | True      | False         |
+| v1.9.2  | VULNERABLE  | True      | True          |
+| v1.9.3  | FIXED       | True      | False         |
 
 ## How It Works
 
-The vulnerability occurs when `logrus.Writer()` receives a single line larger than 64KB without newlines. The internal `bufio.Scanner` fails with "token too long" error, causing the Writer's pipe to close and making it unusable.
+The vulnerability occurs when `logrus.Writer()` receives a single line larger than 64KB without newlines. This can occur when applications pipe user-controlled data (e.g., HTTP headers like User-Agent or stdout/stderr of a sub-process) into `logrus.Writer()`.
 
-**Vulnerable versions**: Writer becomes unusable (DoS)  
-**Fixed versions**: Error is logged but Writer continues to function
+**Vulnerable versions**: The internal scanner fails, the pipe breaks, and the application loses logging or crashes (DoS).
+
+**Fixed versions**: The error is logged, but the Writer continues to function properly, preventing the DoS.
 
 ## References
 
-- GitHub Issue: https://github.com/sirupsen/logrus/issues/1370
-- GitHub PR: https://github.com/sirupsen/logrus/pull/1376
-- Snyk Advisory: https://security.snyk.io/vuln/SNYK-GOLANG-GITHUBCOMSIRUPSENLOGRUS-5564391
-- **CVE**: Pending assignment
-
-
-
+- **CVE**: CVE-2025-65637
+- **GitHub Issue**: https://github.com/sirupsen/logrus/issues/1370
+- **GitHub PR**: https://github.com/sirupsen/logrus/pull/1376
+- **Snyk Advisory**: https://security.snyk.io/vuln/SNYK-GOLANG-GITHUBCOMSIRUPSENLOGRUS-5564391
